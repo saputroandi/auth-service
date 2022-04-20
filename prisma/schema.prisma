@@ -1,5 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// 430869
 
 generator client {
   provider = "prisma-client-js"
@@ -15,10 +16,14 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  email String
+  email String @unique
   password String
 
   name String?
+
+  posts Post[]
+
+  @@map("users")
 }
 
 model Post {
@@ -30,4 +35,9 @@ model Post {
   description String?
   
   slug String
+
+  user_id Int
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("posts")
 }
