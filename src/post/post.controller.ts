@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
+  ParseIntPipe,
   Patch,
   Post,
   UseGuards,
@@ -18,10 +20,17 @@ export class PostController {
   constructor(private postService: PostService) {}
 
   @Get()
-  getPost() {}
+  getPosts(@GetUser('id') user_id: number) {
+    return this.postService.getPosts(user_id);
+  }
 
-  @Get()
-  getPostById() {}
+  @Get(':id')
+  getPostById(
+    @GetUser('id') user_id: number,
+    @Param('id', ParseIntPipe) post_id: number,
+  ) {
+    return this.postService.getPostById(user_id, post_id);
+  }
 
   @Post()
   createPost(@GetUser('id') id: number, @Body() payload: CreatePostDto) {

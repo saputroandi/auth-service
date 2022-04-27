@@ -1,5 +1,4 @@
-import { Body, Injectable } from '@nestjs/common';
-import { GetUser } from 'src/auth/decorator';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto';
 
@@ -7,5 +6,37 @@ import { CreatePostDto } from './dto';
 export class PostService {
   constructor(private prisma: PrismaService) {}
 
-  createPost(@GetUser('id') id: number, @Body() payload: CreatePostDto) {}
+  async createPost(user_id: number, dto: CreatePostDto) {
+    const post = await this.prisma.post.create({
+      data: {
+        user_id: user_id,
+        ...dto,
+      },
+    });
+
+    return post;
+  }
+
+  async getPosts(user_id: number) {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        user_id,
+      },
+    });
+
+    return posts;
+  }
+
+  async getPostById(user_id: number, post_id: number) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: post_id, user_id },
+    });
+
+    // need to fix respon message and status
+    if (!post) throw new ForbiddenException('Not Valid');
+
+    console.log(post);
+
+    return post;
+  }
 }
