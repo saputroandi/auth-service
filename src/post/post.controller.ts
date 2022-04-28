@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
-import { CreatePostDto } from './dto';
+import { CreatePostDto, EditPostDto } from './dto';
 import { PostService } from './post.service';
 
 @UseGuards(JwtGuard)
@@ -37,8 +37,14 @@ export class PostController {
     return this.postService.createPost(id, payload);
   }
 
-  @Patch()
-  editPostById() {}
+  @Patch(':id')
+  editPostById(
+    @GetUser('id') user_id: number,
+    @Param('id', ParseIntPipe) post_id: number,
+    dto: EditPostDto,
+  ) {
+    return this.postService.editPostById(user_id, post_id, dto);
+  }
 
   @Delete()
   deletePostById() {}

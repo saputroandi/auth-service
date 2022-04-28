@@ -1,6 +1,10 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto } from './dto';
+import { CreatePostDto, EditPostDto } from './dto';
 
 @Injectable()
 export class PostService {
@@ -32,11 +36,24 @@ export class PostService {
       where: { id: post_id, user_id },
     });
 
-    // need to fix respon message and status
-    if (!post) throw new ForbiddenException('Not Valid');
+    if (!post) throw new NotFoundException('Not Valid');
 
     console.log(post);
 
     return post;
+  }
+
+  async editPostById(user_id: number, post_id: number, dto: EditPostDto) {
+    const post = await this.prisma.post.findUnique({ where: { id: post_id } });
+
+    if (!post || post.user_id != user_id)
+      throw new ForbiddenException('Unauthorize');
+
+    const updatedPost = await this.prisma.post.update({
+      where: { id: post_id },
+      data: { ...dto },
+    });
+
+    return updatedPost;
   }
 }
