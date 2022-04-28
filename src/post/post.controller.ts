@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -46,6 +48,12 @@ export class PostController {
     return this.postService.editPostById(user_id, post_id, dto);
   }
 
-  @Delete()
-  deletePostById() {}
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  deletePostById(
+    @GetUser('id') user_id: number,
+    @Param('id', ParseIntPipe) post_id: number,
+  ) {
+    return this.postService.deletePostById(user_id, post_id);
+  }
 }

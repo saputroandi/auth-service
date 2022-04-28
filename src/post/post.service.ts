@@ -56,4 +56,13 @@ export class PostService {
 
     return updatedPost;
   }
+
+  async deletePostById(user_id: number, post_id: number) {
+    const post = await this.prisma.post.findUnique({ where: { id: post_id } });
+
+    if (!post || post.user_id != user_id)
+      throw new ForbiddenException('Unauthorize');
+
+    await this.prisma.post.delete({ where: { id: post_id } });
+  }
 }
