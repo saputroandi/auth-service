@@ -25,10 +25,17 @@ export class AuthService {
         data: { email: dto.email, password: hashPassword },
       });
 
+      // delete user password
       delete user.password;
 
-      // return saved user
-      return this.getTokens(user);
+      // create tokens
+      const { access_token, refresh_token } = await this.getTokens(user);
+
+      // update refresh token for db
+      await this.updateHashRefreshToken(user.id, refresh_token);
+
+      // return both tokens
+      return { access_token, refresh_token };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002')
@@ -52,7 +59,32 @@ export class AuthService {
     // if password not match throw exception
     if (!pwMatch) throw new ForbiddenException('Credential are incorrect');
 
-    return this.getTokens(user);
+    // create tokens
+    const { access_token, refresh_token } = await this.getTokens(user);
+
+    // update refresh token for db
+    await this.updateHashRefreshToken(user.id, refresh_token);
+
+    // return both tokens
+    return { access_token, refresh_token };
+  }
+
+  async getAccessToken(dto: AuthDto, refresh_token: string): Promise<Tokens> {
+    // find user and check if refresh token avaible, if not throw error
+    // match refresh token from db if not match throw error
+    // create new access token and update refresh token inside db
+  }
+
+  async updateHashRefreshToken(
+    user_id: number,
+    refresh_token: string,
+  ): Promise<void> {
+    const hashRefreshToken = await argon.hash(refresh_token);
+
+    await this.prisma.user.update({
+      where: { id: user_id },
+      data: { hash_refresh_token: hashRefreshToken },
+    });
   }
 
   // async signToken(
@@ -86,7 +118,7 @@ export class AuthService {
       }),
       this.jwt.sign(user, {
         secret: this.config.get('JWT_SECRET_REFRESH'),
-        expiresIn: '1d',
+        expiresIn: '5h',
       }),
     ]);
 
