@@ -32,8 +32,8 @@ export class AuthController {
   @Post('refresh')
   refreshTokens(
     @GetUser('id') user_id: number,
-    @GetUser('refresh_token') refreshToken: string,
+    @GetUser('refresh_token') refresh_token: string,
   ) {
-    return { response: refreshToken };
+    return this.authService.refreshTokens(user_id, refresh_token);
   }
 }

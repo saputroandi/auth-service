@@ -27,6 +27,7 @@ export class AuthService {
 
       // delete user password
       delete user.password;
+      delete user.hash_refresh_token;
 
       // create tokens
       const { access_token, refresh_token } = await this.getTokens(user);
@@ -69,13 +70,30 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async getAccessToken(dto: AuthDto, refresh_token: string): Promise<Tokens> {
+  async refreshTokens(user_id: number, refresh_token: string): Promise<Tokens> {
     // find user and check if refresh token avaible, if not throw error
+    const user = await this.prisma.user.findUnique({ where: { id: user_id } });
+
+    if (!user || !user.hash_refresh_token)
+      throw new ForbiddenException('Access denied');
+
     // match refresh token from db if not match throw error
+    const matchRefreshToken = await argon.verify(
+      user.hash_refresh_token,
+      refresh_token,
+    );
+
+    if (!matchRefreshToken) throw new ForbiddenException('Access denied');
+
     // create new access token and update refresh token inside db
+    const newTokens = await this.getTokens(user);
+    await this.updateHashRefreshToken(user.id, newTokens.refresh_token);
+
+    // return both tokens
+    return newTokens;
   }
 
-  async updateHashRefreshToken(
+  private async updateHashRefreshToken(
     user_id: number,
     refresh_token: string,
   ): Promise<void> {
@@ -87,38 +105,18 @@ export class AuthService {
     });
   }
 
-  // async signToken(
-  //   userId: number,
-  //   email: string,
-  // ): Promise<{ access_token: string }> {
-  //   const payload = {
-  //     sub: userId,
-  //     email,
-  //   };
-
-  //   const secret = this.config.get('JWT_SECRET');
-
-  //   const token = await this.jwt.signAsync(payload, {
-  //     expiresIn: '15m',
-  //     secret,
-  //   });
-
-  //   return {
-  //     access_token: token,
-  //   };
-  // }
-
-  async getTokens(user: User): Promise<Tokens> {
+  private async getTokens(user: User): Promise<Tokens> {
     delete user.password;
+    delete user.hash_refresh_token;
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.sign(user, {
         secret: this.config.get('JWT_SECRET'),
-        expiresIn: '15m',
+        expiresIn: '5m',
       }),
       this.jwt.sign(user, {
         secret: this.config.get('JWT_SECRET_REFRESH'),
-        expiresIn: '5h',
+        expiresIn: '3h',
       }),
     ]);
 
