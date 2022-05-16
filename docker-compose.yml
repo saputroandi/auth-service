@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  app-service:
+    build: .
+    env_file: .env
+    container_name: portofolio-project-app
+    image: saputroandi/portofolio-project
+    ports:
+      - '9000:3000'

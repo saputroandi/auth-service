@@ -34,6 +34,7 @@ export class PostController {
     return this.postService.getPostById(user_id, post_id);
   }
 
+  @HttpCode(HttpStatus.CREATED)
   @Post()
   createPost(@GetUser('id') id: number, @Body() payload: CreatePostDto) {
     return this.postService.createPost(id, payload);
