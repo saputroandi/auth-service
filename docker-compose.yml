@@ -5,6 +5,6 @@ services:
     build: .
     env_file: .env
     container_name: portofolio-project-app
-    image: saputroandi/portofolio-project
+    image: saputroandi/auth-service
     ports:
       - '9000:3000'

@@ -38,8 +38,6 @@ export class PostService {
 
     if (!post) throw new NotFoundException('Not Valid');
 
-    console.log(post);
-
     return post;
   }
 
