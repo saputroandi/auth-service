@@ -14,8 +14,8 @@ export class UserController {
     return user;
   }
 
-  @Patch()
-  editUser(@GetUser('id') id: number, @Body() dto: EditUserDto) {
-    return this.userService.editUser(id, dto);
-  }
+  // @Patch()
+  // editUser(@GetUser('id') id: number, @Body() dto: EditUserDto) {
+  //   return this.userService.editUser(id, dto);
+  // }
 }

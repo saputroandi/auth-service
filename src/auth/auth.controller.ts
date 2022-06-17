@@ -33,7 +33,7 @@ export class AuthController {
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refreshTokens(
-    @GetUser('id') user_id: number,
+    @GetUser('id') user_id: string,
     @GetUser('refresh_token') refresh_token: string,
   ) {
     return this.authService.refreshTokens(user_id, refresh_token);
@@ -42,7 +42,7 @@ export class AuthController {
   @UseGuards(JwtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetUser('id') user_id: number) {
+  logout(@GetUser('id') user_id: string) {
     return this.authService.logout(user_id);
   }
 }

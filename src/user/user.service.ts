@@ -6,15 +6,15 @@ import { EditUserDto } from './dto/edit-user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async editUser(id: number, dto: EditUserDto) {
-    const user = await this.prisma.user.update({
-      where: { id: id },
-      data: { ...dto },
-    });
+  // async editUser(id: number, dto: EditUserDto) {
+  //   const user = await this.prisma.user.update({
+  //     where: { id: id },
+  //     data: { ...dto },
+  //   });
 
-    delete user.password;
-    delete user.hash_refresh_token;
+  //   delete user.password;
+  //   delete user.hash_refresh_token;
 
-    return user;
-  }
+  //   return user;
+  // }
 }

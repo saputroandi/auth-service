@@ -33,7 +33,7 @@ export class AuthService {
       const { access_token, refresh_token } = await this.getTokens(user);
 
       // update refresh token for db
-      await this.updateHashRefreshToken(user.id, refresh_token);
+      // await this.updateHashRefreshToken(user.id, refresh_token);
 
       // return both tokens
       return { access_token, refresh_token };
@@ -70,7 +70,7 @@ export class AuthService {
     return { access_token, refresh_token };
   }
 
-  async refreshTokens(user_id: number, refresh_token: string): Promise<Tokens> {
+  async refreshTokens(user_id: string, refresh_token: string): Promise<Tokens> {
     // find user and check if refresh token avaible, if not throw error
     const user = await this.prisma.user.findUnique({ where: { id: user_id } });
 
@@ -93,7 +93,7 @@ export class AuthService {
     return newTokens;
   }
 
-  async logout(user_id: number): Promise<boolean> {
+  async logout(user_id: string): Promise<boolean> {
     await this.prisma.user.updateMany({
       where: {
         id: user_id,
@@ -107,7 +107,7 @@ export class AuthService {
   }
 
   private async updateHashRefreshToken(
-    user_id: number,
+    user_id: string,
     refresh_token: string,
   ): Promise<void> {
     const hashRefreshToken = await argon.hash(refresh_token);
