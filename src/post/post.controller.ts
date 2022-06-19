@@ -21,40 +21,34 @@ import { PostService } from './post.service';
 export class PostController {
   constructor(private postService: PostService) {}
 
-  // @Get()
-  // getPosts(@GetUser('id') user_id: number) {
-  //   return this.postService.getPosts(user_id);
-  // }
+  @Get()
+  getPosts(@GetUser('id') user_id: string) {
+    return this.postService.getPosts(user_id);
+  }
 
-  // @Get(':id')
-  // getPostById(
-  //   @GetUser('id') user_id: number,
-  //   @Param('id', ParseIntPipe) post_id: number,
-  // ) {
-  //   return this.postService.getPostById(user_id, post_id);
-  // }
+  @Get(':id')
+  getPostById(@GetUser('id') user_id: string, @Param('id') post_id: string) {
+    return this.postService.getPostById(user_id, post_id);
+  }
 
-  // @HttpCode(HttpStatus.CREATED)
-  // @Post()
-  // createPost(@GetUser('id') id: number, @Body() payload: CreatePostDto) {
-  //   return this.postService.createPost(id, payload);
-  // }
+  @HttpCode(HttpStatus.CREATED)
+  @Post()
+  createPost(@GetUser('id') id: string, @Body() payload: CreatePostDto) {
+    return this.postService.createPost(id, payload);
+  }
 
-  // @Patch(':id')
-  // editPostById(
-  //   @GetUser('id') user_id: number,
-  //   @Param('id', ParseIntPipe) post_id: number,
-  //   dto: EditPostDto,
-  // ) {
-  //   return this.postService.editPostById(user_id, post_id, dto);
-  // }
+  @Patch(':id')
+  editPostById(
+    @GetUser('id') user_id: string,
+    @Param('id') post_id: string,
+    @Body() dto: EditPostDto,
+  ) {
+    return this.postService.editPostById(user_id, post_id, dto);
+  }
 
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @Delete(':id')
-  // deletePostById(
-  //   @GetUser('id') user_id: number,
-  //   @Param('id', ParseIntPipe) post_id: number,
-  // ) {
-  //   return this.postService.deletePostById(user_id, post_id);
-  // }
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':id')
+  deletePostById(@GetUser('id') user_id: string, @Param('id') post_id: string) {
+    return this.postService.deletePostById(user_id, post_id);
+  }
 }

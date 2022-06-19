@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { EditUserDto } from './dto/edit-user.dto';
 
@@ -6,15 +6,21 @@ import { EditUserDto } from './dto/edit-user.dto';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  // async editUser(id: number, dto: EditUserDto) {
-  //   const user = await this.prisma.user.update({
-  //     where: { id: id },
-  //     data: { ...dto },
-  //   });
+  async editUser(id: string, dto: EditUserDto) {
+    const user = await this.prisma.user.findFirst({
+      where: { id },
+    });
 
-  //   delete user.password;
-  //   delete user.hash_refresh_token;
+    if (!user) throw new NotFoundException('Not Valid');
 
-  //   return user;
-  // }
+    const userUpdated = await this.prisma.user.update({
+      where: { id: id },
+      data: { ...dto },
+    });
+
+    delete userUpdated.password;
+    delete userUpdated.hash_refresh_token;
+
+    return userUpdated;
+  }
 }

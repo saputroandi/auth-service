@@ -32,7 +32,7 @@ model Post {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  title String
+  title String @unique
   description String?
   
   slug String

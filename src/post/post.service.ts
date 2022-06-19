@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto, EditPostDto } from './dto';
 
@@ -10,57 +11,68 @@ import { CreatePostDto, EditPostDto } from './dto';
 export class PostService {
   constructor(private prisma: PrismaService) {}
 
-  // async createPost(user_id: number, dto: CreatePostDto) {
-  //   const post = await this.prisma.post.create({
-  //     data: {
-  //       user_id: user_id,
-  //       ...dto,
-  //     },
-  //   });
+  async createPost(user_id: string, dto: CreatePostDto) {
+    try {
+      const post = await this.prisma.post.create({
+        data: {
+          user_id: user_id,
+          ...dto,
+        },
+      });
 
-  //   return post;
-  // }
+      return post;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002')
+          throw new ForbiddenException('Title already taken');
+      }
 
-  // async getPosts(user_id: number) {
-  //   const posts = await this.prisma.post.findMany({
-  //     where: {
-  //       user_id,
-  //     },
-  //   });
+      throw error;
+    }
+  }
 
-  //   return posts;
-  // }
+  async getPosts(user_id: string) {
+    const posts = await this.prisma.post.findMany({
+      where: { user_id },
+      include: { user: true },
+    });
 
-  // async getPostById(user_id: number, post_id: number) {
-  //   const post = await this.prisma.post.findFirst({
-  //     where: { id: post_id, user_id },
-  //   });
+    return posts;
+  }
 
-  //   if (!post) throw new NotFoundException('Not Valid');
+  async getPostById(user_id: string, post_id: string) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: post_id, user_id },
+      include: { user: true },
+    });
 
-  //   return post;
-  // }
+    if (!post) throw new NotFoundException('Not Valid');
 
-  // async editPostById(user_id: number, post_id: number, dto: EditPostDto) {
-  //   const post = await this.prisma.post.findUnique({ where: { id: post_id } });
+    return post;
+  }
 
-  //   if (!post || post.user_id != user_id)
-  //     throw new ForbiddenException('Unauthorize');
+  async editPostById(user_id: string, post_id: string, dto: EditPostDto) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: post_id, user_id },
+    });
 
-  //   const updatedPost = await this.prisma.post.update({
-  //     where: { id: post_id },
-  //     data: { ...dto },
-  //   });
+    if (!post) throw new NotFoundException('Not Valid');
 
-  //   return updatedPost;
-  // }
+    const updatedPost = await this.prisma.post.update({
+      where: { id: post_id },
+      data: { ...dto },
+    });
 
-  // async deletePostById(user_id: number, post_id: number) {
-  //   const post = await this.prisma.post.findUnique({ where: { id: post_id } });
+    return updatedPost;
+  }
 
-  //   if (!post || post.user_id != user_id)
-  //     throw new ForbiddenException('Unauthorize');
+  async deletePostById(user_id: string, post_id: string) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: post_id, user_id },
+    });
 
-  //   await this.prisma.post.delete({ where: { id: post_id } });
-  // }
+    if (!post) throw new NotFoundException('Not Valid');
+
+    await this.prisma.post.delete({ where: { id: post_id } });
+  }
 }
