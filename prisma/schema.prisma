@@ -19,6 +19,7 @@ model User {
   email String @unique
   password String
   hash_refresh_token String?
+  is_admin Boolean @default(false)
 
   name String?
 

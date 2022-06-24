@@ -1,17 +1,17 @@
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Post,
-  Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { GetUser } from './decorator';
+import { Cookies, GetUser } from './decorator';
 import { AuthDto } from './dto';
 import { JwtGuard, JwtRefreshGuard } from './guard';
+import { ResponseType, Tokens } from './types';
 
 @Controller('auth')
 export class AuthController {
@@ -19,30 +19,58 @@ export class AuthController {
 
   @Post('sign-up')
   @HttpCode(HttpStatus.CREATED)
-  signUp(@Body() dto: AuthDto) {
-    return this.authService.signUp(dto);
+  async signUp(
+    @Body() dto: AuthDto,
+    @Res({ passthrough: true }) res: ResponseType,
+  ) {
+    const tokens = await this.authService.signUp(dto);
+    this.setJwtCookies(res, tokens);
+    return tokens;
   }
 
   @Post('sign-in')
   @HttpCode(HttpStatus.OK)
-  signIn(@Body() dto: AuthDto) {
-    return this.authService.signIn(dto);
+  async signIn(
+    @Body() dto: AuthDto,
+    @Res({ passthrough: true }) res: ResponseType,
+  ) {
+    const tokens = await this.authService.signIn(dto);
+    this.setJwtCookies(res, tokens);
+    return tokens;
   }
 
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refreshTokens(
+  async refreshTokens(
     @GetUser('id') user_id: string,
-    @GetUser('refresh_token') refresh_token: string,
+    @Cookies('jwt') cookies: Tokens,
+    @Res({ passthrough: true }) res: ResponseType,
   ) {
-    return this.authService.refreshTokens(user_id, refresh_token);
+    const tokens = await this.authService.refreshTokens(
+      user_id,
+      cookies.refresh_token,
+    );
+    this.setJwtCookies(res, tokens);
+    return tokens;
   }
 
   @UseGuards(JwtGuard)
   @Post('logout')
   @HttpCode(HttpStatus.OK)
-  logout(@GetUser('id') user_id: string) {
+  logout(
+    @GetUser('id') user_id: string,
+    @Res({ passthrough: true }) res: ResponseType,
+  ) {
+    this.unsetJwtCookies(res);
     return this.authService.logout(user_id);
+  }
+
+  private setJwtCookies(res: ResponseType, tokens: Tokens) {
+    res.cookie('jwt', tokens, { httpOnly: true });
+  }
+
+  private unsetJwtCookies(res: ResponseType) {
+    res.cookie('jwt', {}, { httpOnly: true });
   }
 }
